@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>socket</title>
+<script type="text/javascript" src="jquery.min.js"></script>            
+<style type="text/css">
+#cc,#cb{margin:10px auto; width:800px; border:solid 1px #CCCCCC;  height:500px; font-size:14px;}
+#cc p{line-height:1.8; margin:0px; padding:0px;}
+#cb{height:30px; border:0px;}
+#aaad{display:none;}
+#aaas{display:block;}
+.a{color:#008040;}
+.e{color:#F33;}
+.b{color:#333;}
+.c{color:#999;}
+
+#autors{float:right; width:200px; height:480px; padding:10px 0px; overflow:auto; background-color:#F2F2F2;}
+#content{float:left; width:580px; height:480px; padding:10px; }
+#autors a{display:block; line-height:25px; color:#03C; text-decoration:none; padding:0px 10px;}
+#autors .userck,#autors a:hover{background-color:#999; color:#FFF;}
+
+</style>
+</head>
+
+<body onload='make_name()'>
+<div style="text-align:center; margin-left:auto; margin-right:auto; "><b>鹏哥聊天室</b></div>
+<div id="cc">
+    <div id="content"></div>
+    <div id="autors">
+        <a href="javascript:;" 0nClick="ac('all',this)" class="userck">所有人</a>
+    </div>
+</div>
+<div id="cb">
+<p id="aaas">
+<span class="an1">请交流吧：</span>
+<input type="text" id="sending" value="" style="width: 500px; height: 30px;"/>
+<input type="button" value="发送" onclick="aa()" style="width: 100px; height: 30px;">
+</p>
+</div>
+<script>
+    function make_name()
+    {
+        if(!getcookie("tourist"))
+        {
+            var name=prompt("请输入您的名字","");
+            if(name)//如果返回的有内容
+            {
+               setcookie("tourist",name);
+                alert("欢迎您："+ name);
+            }
+        }else
+        {
+            var name = getcookie("tourist");
+           alert("欢迎您回来："+ name);
+           var ParentTourist = $("#autors"); 
+           var SonTourist = "<a class=\"userck\">"+name+"</a>";
+           ParentTourist.append(SonTourist); 
+        }
+    }
+    function setcookie(name,value){  
+        var Days = 1;  
+        var exp  = new Date();  
+        exp.setTime(exp.getTime() + Days*24*60*60*1000);  
+        document.cookie = name + "="+ escape (value) + ";expires=" + exp.toGMTString();  
+        alert(document.cookie);
+    }  
+     
+
+    function getcookie(name){  
+        var arr = document.cookie.match(new RegExp("(^| )"+name+"=([^;]*)(;|$)"));  
+        if(arr != null){  
+            return (arr[2]);  
+        }else{  
+            return "";  
+        }  
+    }  
+     
+
+    function delcookie(name){  
+        var exp = new Date();  
+        exp.setTime(exp.getTime() - 1);  
+        var cval=getCookie(name);  
+        if(cval!=null) document.cookie= name + "="+cval+";expires="+exp.toGMTString();  
+    }  
+</script>
+</body>
+</html>
