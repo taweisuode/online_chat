@@ -19,7 +19,8 @@
 #content{float:left; width:580px; height:480px; padding:10px; }
 #autors a{display:block; line-height:25px; color:#03C; text-decoration:none; padding:0px 10px;}
 #autors .userck,#autors a:hover{background-color:#999; color:#FFF;}
-
+.content_nowtime{color:#888;}
+.content_tourist{color:blue;cursor:pointer}
 </style>
 </head>
 
@@ -35,7 +36,7 @@
 <p id="aaas">
 <span class="an1">请交流吧：</span>
 <input type="text" id="sending" value="" style="width: 500px; height: 30px;"/>
-<input type="button" value="发送" onclick="aa()" style="width: 100px; height: 30px;">
+<input type="button" value="发送" onclick="sending_message()" style="width: 100px; height: 30px;">
 </p>
 </div>
 <script>
@@ -54,9 +55,33 @@
             var name = getcookie("tourist");
             alert("欢迎您回来："+ name);
         }
+        var content_div = $("#content"); 
+        var NowDateTime = getNowFormatDate();
+        //alert(NowDateTime);
+        var self_content = "<span class=\"content_nowtime\">["+NowDateTime+"]</span>";
+        self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+getcookie("tourist")+"</a>来到了聊天室：<br>";
+        content_div.append(self_content); 
         var ParentTourist = $("#autors"); 
         var SonTourist = "<a class=\"userck\">"+name+"</a>";
         ParentTourist.append(SonTourist); 
+    }
+    function sending_message()
+    {
+        var content_div = $("#content"); 
+        var message = $("#sending").val();
+        if(message)
+        {
+         var NowDateTime = getNowFormatDate();
+        //alert(NowDateTime);
+        var self_content = "<span class=\"content_nowtime\">["+NowDateTime+"]</span>";
+        self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+getcookie("tourist")+"</a>说：";
+        self_content += message+"<br>";
+        content_div.append(self_content); 
+        $("#sending").val("") ;
+        }else
+        {
+            alert("不能发送空消息");
+        }
     }
     function setcookie(name,value){  
         var Days = 1;  
@@ -82,6 +107,36 @@
         var cval=getCookie(name);  
         if(cval!=null) document.cookie= name + "="+cval+";expires="+exp.toGMTString();  
     }  
+    function getNowFormatDate() {
+        var date = new Date();
+        var seperator1 = "-";
+        var seperator2 = ":";
+        var month = date.getMonth() + 1;
+        var strDate = date.getDate();
+        var strHours = date.getHours();
+        var strMinutes = date.getMinutes();
+        var strSeconds = date.getSeconds();
+        if (month >= 1 && month <= 9) {
+            month = "0" + month;
+        }
+        if (strDate >= 0 && strDate <= 9) {
+            strDate = "0" + strDate;
+        }
+        if (strHours >= 0 && strHours <= 9) {
+            strHours = "0" + strHours;
+        }
+        if (strMinutes >= 0 && strMinutes <= 9) {
+            strMinutes = "0" + strMinutes;
+        }
+        if (strSeconds >= 0 && strSeconds <= 9) {
+            strSeconds = "0" + strSeconds;
+        }
+        var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate
+                + " " + strHours + seperator2 + strMinutes
+                + seperator2 + strSeconds;
+        return currentdate;
+    } 
+
 </script>
 </body>
 </html>
