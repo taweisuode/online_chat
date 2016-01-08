@@ -1,6 +1,6 @@
 # online_chat
 
-We are about to create an online_chat program using JS WebSockte.
+We are about to create an online_chat program using JS WebSocket.
 
 The First authors are Pengge and Xiaofu.
       
