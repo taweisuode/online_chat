@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>socket</title>
 <script type="text/javascript" src="jquery.min.js"></script>            
+<script type="text/javascript" src="chat_server/node_modules/socket.io-client/socket.io.js"></script>            
 <style type="text/css">
 #cc,#cb{margin:10px auto; width:800px; border:solid 1px #CCCCCC;  height:500px; font-size:14px;}
 #cc p{line-height:1.8; margin:0px; padding:0px;}
@@ -29,17 +30,24 @@
 <div id="cc">
     <div id="content"></div>
     <div id="autors">
-        <a href="javascript:;" 0nClick="ac('all',this)" class="userck">所有人</a>
+        <a href="javascript:;" onclick="ac('all',this)" class="userck">所有人</a>
     </div>
 </div>
 <div id="cb">
 <p id="aaas">
 <span class="an1">请交流吧：</span>
 <input type="text" id="sending" value="" style="width: 500px; height: 30px;"/>
-<input type="button" value="发送" onclick="sending_message()" style="width: 100px; height: 30px;">
+<input type="button" value="发送" id="send_message"  style="width: 100px; height: 30px;">
 </p>
 </div>
 <script>
+    //获取聊天框对象   用content_div.append(self_content);就能发布信息 
+    var content_div = $("#content"); 
+    //设置localStorage对象
+    var storage = window.localStorage;
+    //调用js 时间对象
+    var nowDate  = new Date();  
+
     function make_name()
     {
         if(!getcookie("tourist"))
@@ -55,34 +63,30 @@
             var name = getcookie("tourist");
             alert("欢迎您回来："+ name);
         }
-        var content_div = $("#content"); 
-        var NowDateTime = getNowFormatDate();
-        //alert(NowDateTime);
-        var self_content = "<span class=\"content_nowtime\">["+NowDateTime+"]</span>";
-        self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+getcookie("tourist")+"</a>来到了聊天室：<br>";
-        content_div.append(self_content); 
-        var ParentTourist = $("#autors"); 
-        var SonTourist = "<a class=\"userck\">"+name+"</a>";
-        ParentTourist.append(SonTourist); 
+        //在登陆时候记录下登陆时间－记录到localstorage中，然后根据失效时间 是否删除所有的localhostStorage数据
+        if(storage.getItem("nowTime"))
+        {
+            if(nowDate.getTime() - storage.getItem("nowTime") <= (1000*60*60*24))
+            {
+                var ever_timestamp =  parseInt(storage.getItem("nowTime")); //这块要用parseInt函数解析一个字符串，并返回一个整数
+                //调用js 根据时间戳返回标准时间方法
+                var format_time = getNowFormatDate(ever_timestamp);
+                //var format_time = formatDate(storage.getItem("nowTime"));
+                var self_content = "&nbsp;&nbsp;<a class=\"content_tourist\">"+getcookie("tourist")+"</a>曾来到了聊天室，时间为";
+                self_content += "<span class=\"content_nowtime\">["+format_time+"]</span><br>";
+                content_div.append(self_content); 
+            }else
+            {
+                storage.removeItem(getcookie("tourist")+"--message");
+            }
+        }
+        storage.setItem("nowTime",nowDate.getTime());
+        //alert(nowDate.getTime());
     }
     function sending_message()
     {
-        var content_div = $("#content"); 
-        var message = $("#sending").val();
-        if(message)
-        {
-         var NowDateTime = getNowFormatDate();
-        //alert(NowDateTime);
-        var self_content = "<span class=\"content_nowtime\">["+NowDateTime+"]</span>";
-        self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+getcookie("tourist")+"</a>说：";
-        self_content += message+"<br>";
-        content_div.append(self_content); 
-        $("#sending").val("") ;
-        }else
-        {
-            alert("不能发送空消息");
-        }
     }
+    //设置cookie方法
     function setcookie(name,value){  
         var Days = 1;  
         var exp  = new Date();  
@@ -90,7 +94,7 @@
         document.cookie = name + "="+ escape (value) + ";expires=" + exp.toGMTString();  
     }  
      
-
+    //获取cookie方法
     function getcookie(name){  
         var arr = document.cookie.match(new RegExp("(^| )"+name+"=([^;]*)(;|$)"));  
         if(arr != null){  
@@ -100,15 +104,22 @@
         }  
     }  
      
-
+    //删除cookie方法
     function delcookie(name){  
         var exp = new Date();  
         exp.setTime(exp.getTime() - 1);  
         var cval=getCookie(name);  
         if(cval!=null) document.cookie= name + "="+cval+";expires="+exp.toGMTString();  
     }  
-    function getNowFormatDate() {
-        var date = new Date();
+    //js获取当前时间方法(可传时间戳参数)
+    function getNowFormatDate(timestamp = null) {
+        if(timestamp)
+        {
+            var date = new Date(timestamp);
+        }else
+        {
+            var date = new Date();
+        }
         var seperator1 = "-";
         var seperator2 = ":";
         var month = date.getMonth() + 1;
@@ -135,7 +146,70 @@
                 + " " + strHours + seperator2 + strMinutes
                 + seperator2 + strSeconds;
         return currentdate;
-    } 
+    }
+    $(function()
+    {
+        var tourist = getcookie("tourist");
+        //websocket = new WebSocket("ws://localhost:3000");
+        var my_websocket = io.connect('ws://10.207.93.166:3000');
+        //js获取当前时间
+        var NowDateTime = getNowFormatDate();
+        console.log(my_websocket);
+        my_websocket.on('connect',function()
+        {
+            my_websocket.emit("login",tourist);
+            my_websocket.on('login_message',function(message)
+            {
+                //刚进聊天室时候在聊天框显示某某进入聊天室
+                var self_content = "<span class=\"content_nowtime\">["+NowDateTime+"]</span>";
+                self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+tourist+"</a>来到了聊天室：<br>";
+                content_div.append(self_content); 
+                //在右侧观众栏添加刚登陆的游客
+                var ParentTourist = $("#autors"); 
+                var SonTourist = "<a class=\"userck\">"+tourist+"</a>";
+                ParentTourist.append(SonTourist); 
+            });
+            my_websocket.on('message',function(msg)
+            {
+                //在聊天框添加聊天的记录
+                sendTime = msg.send_time;
+                username = msg.username;
+                tourist_message = msg.content;
+                console.log(msg);
+                var self_content = "<span class=\"content_nowtime\">["+sendTime+"]</span>";
+                self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+username+"</a>说：";
+                self_content += tourist_message+"<br>";
+                content_div.append(self_content); 
+                $("#sending").val("") ;
+                //并加聊天记录添加到localStorage中，用来在用户再次登陆时候体现上次登录的内容
+                var storageKey = getcookie("tourist")+"--message";
+                //storage.setItem(storageKey,message);
+            });
+        });
+        $("#send_message").click(function()
+        {
+            var content_div = $("#content"); 
+            var self_message = $("#sending").val();
+            var NowDateTime = getNowFormatDate();
+            if(self_message)
+            {
+                var data = {
+                    username : tourist,
+                    content  : self_message,
+                    send_time: NowDateTime
+                }
+                my_websocket.emit("message",data);
+
+            }else
+            {
+                alert("不能发送空消息");
+            }
+        });
+
+    
+    });
+     
+
 
 </script>
 </body>
