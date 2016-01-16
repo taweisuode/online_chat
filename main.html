@@ -8,7 +8,7 @@
 <script type="text/javascript" src="jquery.qqFace.js"></script>
 <style type="text/css">
 #cc,#cb{margin:10px auto; width:800px; border:solid 1px #CCCCCC;  height:500px; font-size:14px;}
-#cc p{line-height:1.8; margin:0px; padding:0px;}
+#cc p{line-height:1.8; padding:0px;}
 #cb{height:30px; border:0px;}
 #aaad{display:none;}
 #aaas{display:block;}
@@ -68,13 +68,83 @@ span.emotion:hover{background-position:2px -28px}
     background: -moz-linear-gradient(top,  #6b9d28,  #436b0c);
     filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#6b9d28', endColorstr='#436b0c');
 }
+ /* bubble style */
+        .sender{
+            clear:both;
+        }
+        .sender div:nth-of-type(1){
+            float: left;
+        }
+        .sender div:nth-of-type(2){
+            background-color: aquamarine;
+            float: left;
+            max-width:200px;
+            margin: 15px 20px 10px 15px;
+            padding: 10px 10px 10px 0px;
+            border-radius:7px;
+        }
+        .receiver_name_l
+        {
+            float: left;
+            margin:-32px 0px 0px 0px;
+            color:#aaaaaa;
+        }
+        .receiver_name_r
+        {
+            float: right;
+            margin:-32px 0px 0px -100px;
+            color:#aaaaaa;
+        }
+        .receiver div:first-child img,
+        .sender div:first-child img{
+            width:50px;
+            height: 50px;
+        }
+
+        .receiver{
+            clear:both;
+        }
+        .receiver div:nth-child(1){
+            float: right;
+        }
+        .receiver div:nth-of-type(2){
+            float:right;
+            max-width:200px;
+            background-color: gold;
+            margin: 15px 10px 10px 20px;
+            padding: 10px 0px 10px 10px;
+            border-radius:7px;
+        }
+
+        .left_triangle{
+            height:0px;  
+            width:0px;  
+            border-width:8px;  
+            border-style:solid;  
+            border-color:transparent aquamarine transparent transparent;  
+            position: relative;
+            left:-16px;
+            top:3px;
+        }
+
+        .right_triangle{
+            height:0px;  
+            width:0px;  
+            border-width:8px;  
+            border-style:solid;  
+            border-color:transparent transparent transparent gold;  
+            position: relative;
+            right:-16px;
+            top:3px;
+        }
+.clear{clear:both;}
 </style>
 </head>
 
 <body>
 <div style="text-align:center; margin-left:auto; margin-right:auto; "><b>鹏哥聊天室</b></div>
 <div id="cc">
-    <div id="content"></div>
+    <div id="content"><a href="#" id="clearAll" onclick="clearAll()" style="float:right">清空记录</a></div>
     <div id="autors">
         <a href="javascript:;" onclick="ac('all',this)" class="userck" id="userck">所有人 －共 0 人</a>
     </div>
@@ -206,7 +276,7 @@ span.emotion:hover{background-position:2px -28px}
                 $("#userck").siblings().remove();
                 scrollWindow()
                 var self_content = "<span class=\"content_nowtime\">["+NowDateTime+"]</span>";
-                self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+message.user_now+"</a>来到了聊天室：<br>";
+                self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+message.user_now+"</a>来到了聊天室：<br><br>";
                 content_div.append(self_content); 
                 //在右侧观众栏添加刚登陆的游客
                 var ParentTourist = $("#autors"); 
@@ -225,9 +295,35 @@ span.emotion:hover{background-position:2px -28px}
                 username = msg.username;
                 tourist_message = replace_em(msg.content);
                 console.log(msg);
-                var self_content = "<span class=\"content_nowtime\">["+sendTime+"]</span>";
-                self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+username+"</a>说：";
-                self_content += tourist_message+"<br>";
+                if(getcookie("tourist") == username)
+                {
+                    var self_content = "<div class=\"receiver\">";
+                    self_content += "<div><img src=\"arclist/online_chat_face.jpg\" style=\"width:50px;height:50px\"></div>";
+                    self_content += "<div><div class=\"right_triangle\"></div>";
+                    self_content += "<p class=\"receiver_name_r\">"+username+"</p>";
+                    self_content += "<span>"+tourist_message+"</span>";
+                    self_content += "</div></div><br>";
+                    self_content += "<div class=\"clear\"></div>";
+    /*
+                    var self_content = "<span class=\"content_nowtime\">["+sendTime+"]</span>";
+                    self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+username+"</a>说：";
+                    self_content += tourist_message+"<br>";
+    */ 
+                }else
+                {
+                    var self_content = "<div class=\"sender\">";
+                    self_content += "<div><img src=\"arclist/online_chat_face.jpg\" style=\"width:50px;height:50px\"></div>";
+                    self_content += "<div><div class=\"left_triangle\"></div>";
+                    self_content += "<p class=\"receiver_name_l\">"+username+"</p>";
+                    self_content += "<span>"+tourist_message+"</span>";
+                    self_content += "</div></div>";
+                    self_content += "<div class=\"clear\"></div>";
+    /*
+                    var self_content = "<span class=\"content_nowtime\">["+sendTime+"]</span>";
+                    self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+username+"</a>说：";
+                    self_content += tourist_message+"<br>";
+    */ 
+                }
                 content_div.append(self_content); 
                 scrollWindow()
                 //并加聊天记录添加到localStorage中，用来在用户再次登陆时候体现上次登录的内容
@@ -345,7 +441,12 @@ function scrollWindow(){
     var t = document.getElementById('content');
     t.scrollTop = t.scrollHeight;
 }
-
+function clearAll()
+{
+    $("content").html("");
+    var newHtml = "<a href=\"#\" onclick=\"clearAll()\" id=\"clearAll\" style=\"float:right\">清空记录</a>";
+    $("#content").html(newHtml);
+}
 </script>
 </body>
 </html>
