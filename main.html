@@ -5,6 +5,7 @@
 <title>socket</title>
 <script type="text/javascript" src="jquery.min.js"></script>            
 <script type="text/javascript" src="chat_server/node_modules/socket.io-client/socket.io.js"></script>            
+<script type="text/javascript" src="jquery.qqFace.js"></script>
 <style type="text/css">
 #cc,#cb{margin:10px auto; width:800px; border:solid 1px #CCCCCC;  height:500px; font-size:14px;}
 #cc p{line-height:1.8; margin:0px; padding:0px;}
@@ -17,28 +18,73 @@
 .c{color:#999;}
 
 #autors{float:right; width:200px; height:480px; padding:10px 0px; overflow:auto; background-color:#F2F2F2;}
-#content{float:left; width:580px; height:480px; padding:10px; }
+#content{float:left; width:580px; height:480px; padding:10px;overflow:auto }
 #autors a{display:block; line-height:25px; color:#03C; text-decoration:none; padding:0px 10px;}
 #autors .userck,#autors a:hover{background-color:#999; color:#FFF;}
 .content_nowtime{color:#888;}
 .content_tourist{color:blue;cursor:pointer}
+.comment{width:680px; margin:20px auto; position:relative; background:#fff; padding:20px 50px 50px; border:1px solid #DDD; border-radius:5px;}
+.comment h3{height:28px; line-height:28px}
+.com_form{width:100%; position:relative}
+.input{width:99%; height:60px; border:1px solid #ccc}
+.com_form p{height:28px; line-height:28px; position:relative; margin-top:10px;}
+span.emotion{width:42px; height:20px; padding-left:5px; cursor:pointer}
+span.emotion:hover{background-position:2px -28px}
+.qqFace{margin-top:4px;background:#fff;padding:2px;border:1px #dfe6f6 solid;}
+.qqFace table td{padding:0px;}
+.qqFace table td img{cursor:pointer;border:1px #fff solid;}
+.qqFace table td img:hover{border:1px #0066cc solid;}
+#show{width:770px; margin:20px auto; background:#fff; padding:5px; border:1px solid #DDD; vertical-align:top;}
+
+.sub_btn {
+    position:absolute; right:0px; top:0;
+    display: inline-block;
+    zoom: 1; /* zoom and *display = ie7 hack for display:inline-block */
+    *display: inline;
+    vertical-align: baseline;
+    margin: 0 2px;
+    outline: none;
+    cursor: pointer;
+    text-align: center;
+    font: 14px/100% Arial, Helvetica, sans-serif;
+    padding: .5em 2em .55em;
+    text-shadow: 0 1px 1px rgba(0,0,0,.6);
+    -webkit-border-radius: 3px; 
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+    -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    -moz-box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    color: #e8f0de;
+    border: solid 1px #538312;
+    background: #64991e;
+    background: -webkit-gradient(linear, left top, left bottom, from(#7db72f), to(#4e7d0e));
+    background: -moz-linear-gradient(top,  #7db72f,  #4e7d0e);
+    filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#7db72f', endColorstr='#4e7d0e');
+}
+.sub_btn:hover {
+    background: #538018;
+    background: -webkit-gradient(linear, left top, left bottom, from(#6b9d28), to(#436b0c));
+    background: -moz-linear-gradient(top,  #6b9d28,  #436b0c);
+    filter:  progid:DXImageTransform.Microsoft.gradient(startColorstr='#6b9d28', endColorstr='#436b0c');
+}
 </style>
 </head>
 
-<body onload='make_name()'>
+<body>
 <div style="text-align:center; margin-left:auto; margin-right:auto; "><b>鹏哥聊天室</b></div>
 <div id="cc">
     <div id="content"></div>
     <div id="autors">
-        <a href="javascript:;" onclick="ac('all',this)" class="userck">所有人</a>
+        <a href="javascript:;" onclick="ac('all',this)" class="userck" id="userck">所有人 －共 0 人</a>
     </div>
 </div>
 <div id="cb">
-<p id="aaas">
 <span class="an1">请交流吧：</span>
-<input type="text" id="sending" value="" style="width: 500px; height: 30px;"/>
-<input type="button" value="发送" id="send_message"  style="width: 100px; height: 30px;">
-</p>
+<input type="text" id="sending"  value="" style="width: 500px; height: 30px;"/>
+<span class="emotion"><img src="arclist/start_face.jpg" style="width:25px;height:25px;margin-bottom: -6px; margin-right: 5px;"/></span>
+<input type="button" value="发送" id="send_message"  style="width: 100px; height: 38px;">
+<input type="hidden" value="" id="cookieName" />
 </div>
 <script>
     //获取聊天框对象   用content_div.append(self_content);就能发布信息 
@@ -48,44 +94,6 @@
     //调用js 时间对象
     var nowDate  = new Date();  
 
-    function make_name()
-    {
-        if(!getcookie("tourist"))
-        {
-            var name=prompt("请输入您的名字","");
-            if(name)//如果返回的有内容
-            {
-               setcookie("tourist",name);
-                alert("欢迎您："+ name);
-            }
-        }else
-        {
-            var name = getcookie("tourist");
-            alert("欢迎您回来："+ name);
-        }
-        //在登陆时候记录下登陆时间－记录到localstorage中，然后根据失效时间 是否删除所有的localhostStorage数据
-        if(storage.getItem("nowTime"))
-        {
-            if(nowDate.getTime() - storage.getItem("nowTime") <= (1000*60*60*24))
-            {
-                var ever_timestamp =  parseInt(storage.getItem("nowTime")); //这块要用parseInt函数解析一个字符串，并返回一个整数
-                //调用js 根据时间戳返回标准时间方法
-                var format_time = getNowFormatDate(ever_timestamp);
-                //var format_time = formatDate(storage.getItem("nowTime"));
-                var self_content = "&nbsp;&nbsp;<a class=\"content_tourist\">"+getcookie("tourist")+"</a>曾来到了聊天室，时间为";
-                self_content += "<span class=\"content_nowtime\">["+format_time+"]</span><br>";
-                content_div.append(self_content); 
-            }else
-            {
-                storage.removeItem(getcookie("tourist")+"--message");
-            }
-        }
-        storage.setItem("nowTime",nowDate.getTime());
-        //alert(nowDate.getTime());
-    }
-    function sending_message()
-    {
-    }
     //设置cookie方法
     function setcookie(name,value){  
         var Days = 1;  
@@ -149,9 +157,41 @@
     }
     $(function()
     {
-        var tourist = getcookie("tourist");
+        if(!getcookie("tourist"))
+        {
+            var tourist=prompt("请输入您的名字","");
+            if(tourist)//如果返回的有内容
+            {
+                setcookie("tourist",tourist);
+                $("#socketName").val(tourist);
+                alert("欢迎您："+ tourist);
+            }
+        }else
+        {
+            var tourist = getcookie("tourist");
+            alert("欢迎您回来："+ tourist);
+        }
+        //在登陆时候记录下登陆时间－记录到localstorage中，然后根据失效时间 是否删除所有的localhostStorage数据
+        if(storage.getItem("nowTime"))
+        {
+            if(nowDate.getTime() - storage.getItem("nowTime") <= (1000*60*60*24))
+            {
+                var ever_timestamp =  parseInt(storage.getItem("nowTime")); //这块要用parseInt函数解析一个字符串，并返回一个整数
+                //调用js 根据时间戳返回标准时间方法
+                var format_time = getNowFormatDate(ever_timestamp);
+                //var format_time = formatDate(storage.getItem("nowTime"));
+                var self_content = "&nbsp;&nbsp;<a class=\"content_tourist\">"+getcookie("tourist")+"</a>曾来到了聊天室，时间为";
+                self_content += "<span class=\"content_nowtime\">["+format_time+"]</span><br>";
+                content_div.append(self_content); 
+            }else
+            {
+                storage.removeItem(getcookie("tourist")+"--message");
+            }
+        }
+        //storage.setItem("nowTime",nowDate.getTime());
+        //alert(nowDate.getTime());
         //websocket = new WebSocket("ws://localhost:3000");
-        var my_websocket = io.connect('ws://10.207.93.166:3000');
+        var my_websocket = io.connect('ws://192.168.1.14:3000');
         //js获取当前时间
         var NowDateTime = getNowFormatDate();
         console.log(my_websocket);
@@ -161,55 +201,150 @@
             my_websocket.on('login_message',function(message)
             {
                 //刚进聊天室时候在聊天框显示某某进入聊天室
+                console.log(message);
+                //每次登陆先删除右边栏所有的用户
+                $("#userck").siblings().remove();
+                scrollWindow()
                 var self_content = "<span class=\"content_nowtime\">["+NowDateTime+"]</span>";
-                self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+tourist+"</a>来到了聊天室：<br>";
+                self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+message.user_now+"</a>来到了聊天室：<br>";
                 content_div.append(self_content); 
                 //在右侧观众栏添加刚登陆的游客
                 var ParentTourist = $("#autors"); 
-                var SonTourist = "<a class=\"userck\">"+tourist+"</a>";
-                ParentTourist.append(SonTourist); 
+                for (i in message.user_array)
+                {
+                    var SonTourist = "<a class=\"userck\">"+message.user_array[i]+"</a>";
+                    ParentTourist.append(SonTourist); 
+                }
+                var touristCount = "所有人－共 "+message.user_count+" 人";
+                $("#userck").text(touristCount);
             });
             my_websocket.on('message',function(msg)
             {
                 //在聊天框添加聊天的记录
                 sendTime = msg.send_time;
                 username = msg.username;
-                tourist_message = msg.content;
+                tourist_message = replace_em(msg.content);
                 console.log(msg);
                 var self_content = "<span class=\"content_nowtime\">["+sendTime+"]</span>";
                 self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+username+"</a>说：";
                 self_content += tourist_message+"<br>";
                 content_div.append(self_content); 
-                $("#sending").val("") ;
+                scrollWindow()
                 //并加聊天记录添加到localStorage中，用来在用户再次登陆时候体现上次登录的内容
                 var storageKey = getcookie("tourist")+"--message";
                 //storage.setItem(storageKey,message);
             });
-        });
-        $("#send_message").click(function()
-        {
-            var content_div = $("#content"); 
-            var self_message = $("#sending").val();
-            var NowDateTime = getNowFormatDate();
-            if(self_message)
-            {
-                var data = {
-                    username : tourist,
-                    content  : self_message,
-                    send_time: NowDateTime
-                }
-                my_websocket.emit("message",data);
-
-            }else
-            {
-                alert("不能发送空消息");
+           //关闭窗口后触发用户退出功能 
+            window.onunload = onunload_handler;
+            function onunload_handler(){
+                my_websocket.emit("logout",tourist);
             }
+            my_websocket.on('logout_message',function(message)
+            {
+                $("#userck").siblings().remove();
+                var self_content = "<span class=\"content_nowtime\">["+NowDateTime+"]</span>";
+                self_content += "&nbsp;&nbsp;<a class=\"content_tourist\">"+message.user_now+"</a>退出了聊天室：<br>";
+                content_div.append(self_content); 
+                //在右侧观众栏添加刚登陆的游客
+                var ParentTourist = $("#autors"); 
+                for (i in message.user_array)
+                {
+                    var SonTourist = "<a class=\"userck\">"+message.user_array[i]+"</a>";
+                    ParentTourist.append(SonTourist); 
+                }
+                var touristCount = "所有人－共 "+message.user_count+" 人";
+                $("#userck").text(touristCount);
+            });
+            //赋予输入框enter按键发送消息的功能
+            $(document).keypress(function(e)
+            {
+                var self_message = $("#sending").val();
+                if(e.keyCode == 13 && self_message)
+                {
+                    var content_div = $("#content"); 
+                    var NowDateTime = getNowFormatDate();
+                    if(self_message)
+                    {
+                        var data = {
+                            username : tourist,
+                            content  : self_message,
+                            send_time: NowDateTime
+                        }
+                        my_websocket.emit("message",data);
+                        $("#sending").val("") ;
+
+                    }else
+                    {
+                        alert("不能发送空消息");
+                    }
+                }
+            });
+            $("#sending").keypress(function(e)
+            {
+                var tourist = getcookie("tourist");
+                if(e.keyCode == 13)
+                {
+                    var content_div = $("#content"); 
+                    var self_message = $("#sending").val();
+                    var NowDateTime = getNowFormatDate();
+                    if(self_message)
+                    {
+                        var data = {
+                            username : tourist,
+                            content  : self_message,
+                            send_time: NowDateTime
+                        }
+                        my_websocket.emit("message",data);
+                        $("#sending").val("") ;
+
+                    }else
+                    {
+                        alert("不能发送空消息");
+                    }
+                }
+            });
+            //发送按钮点击发送功能
+            $("#send_message").click(function()
+            {
+                var tourist = getcookie("tourist");
+                var content_div = $("#content"); 
+                var self_message = $("#sending").val();
+                var NowDateTime = getNowFormatDate();
+                if(self_message)
+                {
+                    var data = {
+                        username : tourist,
+                        content  : self_message,
+                        send_time: NowDateTime
+                    }
+                    my_websocket.emit("message",data);
+                    $("#sending").val("") ;
+
+                }else
+                {
+                    alert("不能发送空消息");
+                }
+            });
         });
-
-    
+        $('.emotion').qqFace({
+            id : 'facebox', 
+            assign:'sending', 
+            path:'arclist/' //表情存放的路径
+        });
     });
-     
-
+//正则替换表情
+function replace_em(str){
+    str = str.replace(/\</g,'&lt;');
+    str = str.replace(/\>/g,'&gt;');
+    str = str.replace(/\n/g,'<br/>');
+    str = str.replace(/\[em_([0-9]*)\]/g,'<img src="arclist/$1.gif" border="0" />');
+    return str;
+}
+//将信息放在滚动条最下面
+function scrollWindow(){
+    var t = document.getElementById('content');
+    t.scrollTop = t.scrollHeight;
+}
 
 </script>
 </body>
