@@ -15,4 +15,4 @@ I am grad to hear that anyone can ask me anything .
 Show the cutting picture using this programming.
 
 
- ![image](https://github.com/taweisuode/online_chat/arclist/online_chat_show.png)
+ ![image](https://raw.githubusercontent.com/taweisuode/online_chat/master/arclist/online_chat_show.png)
