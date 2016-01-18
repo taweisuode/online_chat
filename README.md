@@ -6,4 +6,12 @@ The First authors are Pengge and Xiaofu.
       
 Although it has the Ugly UI,but I think it will have the excellent technology.
 
-Haha.
+I have writen a tutorial for this programming in http://blog.csdn.net/u013296766/article/details/50530490
+
+This title called " websocket以及nodejs联手打造的类qq群聊天室 教程 附 原代码 " .
+
+I am grad to hear that anyone can ask me anything .
+
+Show the cutting picture using this programming.
+
+
