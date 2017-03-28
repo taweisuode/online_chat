@@ -16,3 +16,5 @@ Show the cutting picture using this programming.
 
 
  ![image](https://raw.githubusercontent.com/taweisuode/online_chat/master/arclist/online_chat_show.png)
+
+please join us in QQ:556830740
